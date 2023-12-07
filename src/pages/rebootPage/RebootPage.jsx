@@ -7,8 +7,15 @@ import { EditModal } from "../../component/EditModal";
 import { Banner } from "../../component/Banner/Banner";
 import { Modal } from "bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getServerList } from "../../redux/reboot/slice";
 
 export const RebootPage = () => {
+  // React hooks
+  const dispatch = useAppDispatch();
+
+  // Redux store
+  const serverList = useSelector((s) => s.reboot.serverList);
+
   // input values
   const [editUsername, setEditUsername] = useState("");
   const [editServerName, setEditServerName] = useState("");
@@ -31,6 +38,7 @@ export const RebootPage = () => {
   let [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    dispatch(getServerList());
     setEditModal(new Modal(document.getElementById("editServerModal"), {}));
     setAddServerModal(new Modal(document.getElementById("addServerModal"), {}));
     setDeleteModal(new Modal(document.getElementById("deleteModal"), {}));
@@ -312,7 +320,80 @@ export const RebootPage = () => {
           </div>
           {/* dashboard - end */}
 
-          <div className="server-cards-section"></div>
+          <div className="server-cards-section">
+            {/* card list - begin*/}
+            {serverList.map((item) => (
+              <div className="server-card" key={item.ip}>
+                {/* --------- server card left box ---------- */}
+                <div className="server-card-left-box">
+                  <div className="server-card-header server-card-column">
+                    <div className="server-card-name server-card-primary-text">
+                      {item.serverName}
+                    </div>
+                    <a
+                      className="server-card-secondary-text"
+                      href={`https://${item.ip}`}
+                      target="_blank"
+                      rel="noreferrer noopenner"
+                    >
+                      {item.ip}
+                    </a>
+                    {/* </div> */}
+                  </div>
+                </div>
+
+                {/* --------- server card right box ---------- */}
+
+                <div className="server-card-right-box">
+                  {/* edit and delete buttons */}
+                  <div className="server-card-buttons-column">
+                    <div className="server-card-buttons-row">
+                      <button
+                        type="button"
+                        className="btn edit-btn"
+                        disabled={isDisableButton()}
+                        onClick={(e) => onClickEdit(item)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn delete-btn"
+                        disabled={isDisableButton()}
+                        onClick={(e) => onClickDelete(item.ip)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  {/* End of edit and delete buttons */}
+
+                  <div className="card-server-input-container">
+                    <input
+                      id={item.ip.replaceAll(".", "-") + "-checkbox"}
+                      type="checkbox"
+                      className="card-server-checkbox"
+                      name={item.ip}
+                      checked={item.checked}
+                      disabled={isDisableButton()}
+                      onChange={(e) => {
+                        handleCheckChange(
+                          {
+                            target: {
+                              itemIp: e.target.name,
+                              itemChecked: e.target.checked,
+                            },
+                          },
+                          item
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

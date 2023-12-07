@@ -20,6 +20,20 @@ const initialState = {
   isUsePushEvent: true,
 };
 
+export const getServerList = createAsyncThunk(
+  "reboot/getServerList",
+  async (_, { getState }) => {
+    const backendIp = getState().reboot.backendIp;
+    const api = `getservers`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + backendIp,
+      timeout: 8000,
+    });
+    const response = await axiosInstance.get(api);
+
+    return response;
+  }
+);
 
 export const rebootSlice = createSlice({
   name: "reboot",
@@ -82,12 +96,16 @@ export const rebootSlice = createSlice({
     },
   },
   extraReducers: {
-  
+    // getServerListupdateServer reducer
+    [getServerList.pending.type]: (state) => {},
+    [getServerList.fulfilled.type]: (state, action) => {
+      state.serverList = action.payload.data;
+    },
+    [getServerList.rejected.type]: (state, action) => {},
   },
 });
 
 export const rebootMiddleware = createListenerMiddleware();
-
 
 export const {
   setIsLoginAllMode,
