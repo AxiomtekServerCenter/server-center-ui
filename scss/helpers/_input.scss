@@ -1,0 +1,21 @@
+.theme-form-control {
+    background-color: $extra-light-blue-gray;
+    border: 1px solid $extra-light-gray !important;
+    color: $dark-blue-gray;
+    border-top-right-radius: 2px !important; 
+    border-bottom-right-radius: 2px !important; 
+
+}
+
+.theme-input-group-text {
+    color: $light-blue-gray !important;
+    border: 1px solid $extra-light-gray !important;
+    background-color: $extra-light-blue-gray !important;
+    font-weight: 500;
+    border-top-left-radius: 2px !important; 
+    border-bottom-left-radius: 2px !important; 
+}
+
+input.theme-form-control::placeholder {
+    color: $extra-light-gray !important;
+}

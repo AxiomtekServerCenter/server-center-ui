@@ -1,0 +1,114 @@
+@import "../../../scss/helpers/color";
+@import "../../../scss/helpers/text";
+@import "../../../scss/helpers/dimension";
+@import "../../../scss/helpers/type";
+@import "../../../scss/helpers/shadow";
+@import "../../../scss/helpers/underline_anim";
+@import "../../../scss/component/operation_btn";
+
+.social-link-container {
+    margin-left: -10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // min-height: max(max(25vw, 100% - calc(4 * #{$theme-square-length})), min(284px, 100% - calc(4 * #{$theme-square-length})));
+    // height: max(max(25vw, 100% - calc(4 * #{$theme-square-length})), min(284px, 100% - calc(4 * #{$theme-square-length})));
+}
+
+.social-link-container-vertical {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    top: min($title-adjusted-top, max(215px, 15vw));
+    left: calc($header-root-padding-x - ($header-nav-icon-container-size - $header-nav-icon-size) / 2);
+}
+
+
+.fa-facebook,
+.fa-twitter,
+.fa-youtube,
+.fa-linkedin {
+    // width: max(20px, 1.4vw);
+    // height: max(20px, 1.4vw);
+    max-width: auto !important;
+    max-height: 100% !important;
+}
+
+.social-link-a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-link {
+    // width: max(50px, 3.5vw);
+    // height: max(50px, 3.5vw);
+    width: $header-nav-icon-container-size;
+    height: $header-nav-icon-container-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: rgba($theme-inactive-gray, 0.5);
+    // color: $theme-dark;
+}
+
+.social-link svg {
+    width: $header-nav-icon-size;
+    height: $header-nav-icon-size;
+}
+
+
+.social-link-a:not(:last-child) {
+    // margin-right: $header-nav-icon-margin;
+    margin-right: 40px;
+}
+
+.social-link-container-vertical .social-link-a {
+    margin-right: 0;
+    margin-bottom: 40px;
+}
+
+$social-link-classes: (
+    '.social-link-linkedin',
+    '.social-link-youtube',
+    '.social-link-facebook',
+    '.social-link-twitter'
+);
+
+$social-link-colors: (
+    $theme-ocean-green,
+    $theme-red,
+    $theme-ocean-blue,
+    $theme-ocean-sky,
+);
+
+@each $social-link in $social-link-classes {
+
+    $i: index($social-link-classes, $social-link);
+
+    #{$social-link}:hover {
+        color: nth($social-link-colors, $i) !important;
+
+        border: 1px solid transparent;
+    }
+
+
+}
+
+@media (max-width: 768px) {
+    .social-link-container {
+        display: none;
+    }
+}
+
+
+@media (max-width: 1300px) {
+    .social-link-container {
+        display: none;
+    }
+
+    .social-link-container-vertical {
+        display: block;
+    }
+}

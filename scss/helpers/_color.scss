@@ -1,0 +1,75 @@
+@import "../helpers/type";
+
+// 'satu': saturated color
+
+// red
+$red: #f44a51;
+$axiom-red: #75073c;
+$axiom-red-middle: #75073c;
+$axiom-red-light: #b60057;
+$axiom-red-shade-1: #9f375f;
+$axiom-red-dark: #540a2d;
+$theme-red: #b33a4c;
+
+// pink
+$light-rose: #f0c5d5;
+$light-coral: #f0c5bb;
+
+// gray
+$extra-light-blue-gray: #f6f9fc;
+$extra-light-gray: #dbe1e6;
+$light-gray: #aaaaaa;
+$light-blue-gray: #8999ab;
+$dark-blue-gray: #525f7f;
+$gray-100: #00000008;
+$gray-200: #dddddd;
+$gray-300: #cfcfcf;
+$gray-600: #646464;
+$primary-bg-gray-prev: #f5f7fa;
+$primary-bg-gray: #f7f8fe;
+$theme-inactive-gray: #9eadcf;
+$secondary-light-gray: #D2D8E8;
+
+// theme
+$theme-dark: #0F323C;
+$theme-secondary: #9672ff;
+$theme-info: #9ae7db;
+$input-placeholder-color: $dark-blue-gray;
+$text-theme-color: $dark-blue-gray;
+$primary-theme: #19b5ff;
+$primary-theme-bg: #d4effc;
+$primary-highlight-bg: #fce0f6;
+$primary-highlight: #ef79a0;
+$primary-divider-gray: #d2daf1;
+$theme-black: #343f51;
+$secondary-text-color: #949ec2;
+$primary-hover-bg-gray: #f3f3fc;
+$theme-extra-light-gray: #e4e8f1;
+$theme-border: #f0f0f9;
+$server-card-secondary: #8f9cad;
+$underline_anim_color: $theme-black;
+$theme-warning: #efd179;
+
+// operation buttons
+$primary-highlight-shade: #f5a6e7;
+$primary-highlight-light: #fce3f7;
+$primary-theme-shade: #59caff;
+$primary-theme-light: #dbf1fc;
+
+$theme-create: #c080ff;
+$theme-create-shade: #d2a4ff;
+$theme-create-light: #eddaff;
+$theme-other: #fc8272;
+$theme-other-shade: #fda599;
+$theme-other-light: #fce6e3;
+
+// ocean color theme
+$theme-ocean-blue: #89cdee;
+$theme-ocean-sky: #4ddffd;
+$theme-ocean-purple: #acabeb;
+$theme-ocean-green: #8edbeb;
+
+// axtiom color theme
+$axiom-theme-blue: #2c99cd;
+$axiom-theme-pink: #b23670;
+$axiom-theme-purple: #866ec4;

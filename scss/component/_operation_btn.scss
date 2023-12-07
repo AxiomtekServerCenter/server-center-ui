@@ -1,0 +1,194 @@
+@import "../helpers/color";
+@import "../helpers/text";
+@import "../helpers/dimension";
+@import "../helpers/type";
+@import "../helpers/shadow";
+
+$operation-btn-classes: (
+    '.btn-create-server',
+    '.btn-power-on',
+    '.btn-power-off',
+    '.btn-get-status'
+);
+
+.operation-button-list-container {
+    // height: 100%;
+    border-radius: 5px;
+    background: white;
+    display: flex;
+    padding-left: 0;
+    padding-right: 0;
+    background: transparent;
+}
+
+.operation-button-list {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+
+.btn-operation {
+    border: 1px solid transparent !important;
+    height: 42px !important;
+    // width: 84px !important;
+    border-radius: 8px !important;
+    width: 100px !important;
+    padding: 10px 10px 10px 15px !important;
+
+    @if ($operation-btn-style ==square-vertical) {
+        display: flex;
+        flex-direction: column;
+        height: 80px !important;
+        width: 80px !important;
+        border-radius: 25px !important;
+        padding: 15px !important;
+    }
+}
+
+
+
+.operation-btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.operation-btn-container:not(:last-child) {
+    margin-right: 45px;
+
+    @if ($operation-btn-style ==square-vertical) {
+        margin-right: 80px;
+    }
+}
+
+.operation-btn-text {
+    font-size: 12px;
+    width: 100%;
+    max-width: 100%;
+    font-weight: 300;
+    color: $secondary-text-color;
+    line-height: 1;
+    font-family: $font-m-plus;
+    height: 20px;
+    text-align: center;
+    display: none;
+}
+
+.btn-operation-inner-text {
+    margin-left: 5px;
+    font-family: $font-m-plus;
+    font-size: 12px;
+
+    @if ($operation-btn-style ==rectangle) {
+        display: inline;
+        margin-left: 8px;
+    }
+
+    @if ($operation-btn-style ==square-vertical) {
+        margin-left: 0px;
+    }
+
+
+}
+
+.operation-btn-text:first-of-type {
+    margin-top: 10px;
+}
+
+.operation-btn-icon {
+    margin: auto 5px auto 0px;
+    font-size: 14px !important;
+    width: 16px;
+    color: white !important;
+
+    @if ($operation-btn-style ==square-vertical) {
+        margin-right: 0px;
+    }
+
+}
+
+@media screen and (max-width: 768px) {
+
+    .operation-btn-container {
+        margin: 0px 0px 40px 0px;
+    }
+
+    .operation-btn-container:not(:last-child) {
+        margin-right: 5px;
+    }
+}
+
+
+$ocean-btn-colors: (
+    $theme-ocean-blue,
+    $theme-ocean-sky,
+    $theme-ocean-purple,
+    $theme-ocean-green
+);
+
+
+$red-theme-btn-colors: (
+    $axiom-theme-pink,
+    $axiom-theme-blue,
+    $axiom-theme-purple,
+    black
+);
+
+@if ($color-theme ==red) {
+    @each $btn-class in $operation-btn-classes {
+
+        $i: index($operation-btn-classes, $btn-class);
+
+
+        #{$btn-class} {
+            background: nth($red-theme-btn-colors, $i) !important;
+        }
+    }
+}
+
+@if ($color-theme ==ocean or $btn-theme ==ocean) {
+    @each $btn-class in $operation-btn-classes {
+
+        $i: index($operation-btn-classes, $btn-class);
+
+
+        #{$btn-class} {
+            background: nth($ocean-btn-colors, $i) !important;
+        }
+    }
+}
+
+// @if ($color-theme ==navy) {
+//     @each $btn-class in $operation-btn-classes {
+
+//         $i: index($operation-btn-classes, $btn-class);
+
+
+//         #{$btn-class} {
+//             background: white !important;
+//             border: 0.5px solid $theme-dark !important;
+//             color: $theme-dark !important;
+//             transition: 0.3s;
+//         }
+
+//         #{$btn-class}:hover {
+//             color: white !important;
+//             background: $theme-dark !important;
+//             border: 1px solid
+//         }
+
+
+//         #{$btn-class}:hover .operation-btn-icon {
+//             color: white !important;
+//         }
+//     }
+// }
+
+// $color-count: length($dark-btn-colors);
+// @for $i from 1 through $color-count {
+//   color: nth($dark-btn-colors, $i);
+//   nth($operation-btn-classes, $i) {}
+// }

@@ -1,0 +1,119 @@
+@import "../../../scss/helpers/text";
+@import "../../../scss/helpers/dimension";
+@import "../../../scss/helpers/color";
+
+
+// color
+$lake-green: #8ecdd2;
+$dark-lake-green: #67a1a5;
+$middle-lake-green: #76c6d1;
+
+$secondary-background: $dark-lake-green;
+$secondary-text-color: white;
+$info-text-color: $dark-lake-green;
+
+// sizing
+$table-bdrs: 10px;
+$tr-bdrs: 5px;
+
+
+.guide-page-root {
+    width: 100%;
+    background: white;
+    display: flex;
+    justify-content: center;
+}
+
+.table-header,
+.table-td {
+    font-family: arial, sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.table-root {
+    table-layout: fixed;
+    margin: 60px auto;
+    width: 100%;
+    max-width: 100% !important;
+    border-spacing: 0;
+    border-collapse: separate !important;
+    background: rgba(white, 0.3) !important;
+}
+
+.table-td-row:nth-child(even) {
+    background-color: $secondary-background;
+    color: $secondary-text-color;
+}
+
+.table-td-row:nth-child(odd) {
+    color: $info-text-color;
+
+}
+
+.table-root .table-td-row {
+    border-radius: $tr-bdrs;
+}
+
+.table-root tr:nth-child(even) td:first-child {
+    border-top-left-radius: $tr-bdrs ;
+}
+
+.table-root tr:nth-child(even) td:last-child {
+    border-top-right-radius: $tr-bdrs ;
+}
+
+.table-root tr:nth-child(even) td:first-child {
+    border-bottom-left-radius: $tr-bdrs ;
+}
+
+.table-root tr:nth-child(even) td:last-child {
+    border-bottom-right-radius: $tr-bdrs ;
+}
+
+.table-td {
+    padding: 20px;
+    font-family: $theme-font;
+    word-wrap: break-word;
+}
+
+
+
+.box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.ip-guide-title {
+    font-family: $font-poppings;
+    font-size: 36px;
+    line-height: 0.65;
+    font-weight: 600;
+    color: $theme-dark;
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.ip-guide-step {
+    width: 100%;
+}
+
+.ip-guide-text {
+    font-family: arial, sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    color: $info-text-color;
+    margin-bottom: 30px;
+    width: 100%;
+    text-align: start;
+}
+
+.ip-guide-img {
+    width: min(600px, 100%);
+    height: auto;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}

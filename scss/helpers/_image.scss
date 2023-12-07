@@ -1,0 +1,15 @@
+.ratio-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: calc(var(--h) * 100% / var(--w));
+  }
+  
+  .ratio {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  

@@ -1,0 +1,11 @@
+@import "../helpers/color";
+
+// $card-shadow: -5px 12px 35px 1px rgba($primary-bg-gray, 1);
+$card-shadow: -5px 12px 35px 1px rgba(#b8cae2, 0.3); //dbe2ec
+
+.page-shadow {
+    --shadow-y: 8px;
+    --shadow-blur: 16px;
+    --shadow: #{rgba(#323c75, .1)};
+    box-shadow: 0 var(--shadow-y, 4px) var(--shadow-blur, 12px) var(--shadow);
+}

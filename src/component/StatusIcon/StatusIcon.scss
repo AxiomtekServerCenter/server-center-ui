@@ -1,0 +1,37 @@
+@import "../../../scss/helpers/color";
+
+.status-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-icon-success,
+.status-icon-warning,
+.status-icon-danger {
+
+    border-radius: 8px;
+}
+
+.status-icon-success {
+    background: $theme-ocean-green;
+}
+
+.status-icon-warning {
+    background: $theme-warning;
+
+}
+
+.status-icon-danger {
+    background: $primary-highlight;
+}
+
+
+.status-icon-success .fa-check,
+.status-icon-warning .fa-exclamation,
+.status-icon-danger .fa-x {
+    color: white;
+    font-size: 10px !important;
+}

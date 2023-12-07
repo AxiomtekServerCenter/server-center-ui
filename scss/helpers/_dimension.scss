@@ -1,0 +1,141 @@
+@import "../helpers/type";
+
+// primary box
+$primary-box-width: 1300px;
+
+.mb-1 {
+  margin-bottom: 4px;
+}
+
+.w-list-item {
+  width: 800px;
+}
+
+.h-list-item {
+  height: 40px;
+}
+
+$main-content-width: 840px;
+$content-top-left-width: calc(1 * 380px);
+$top-bar-height: 45px;
+$sidebar-width: 275px;
+$banner-rounded-margin: 68px;
+$chart-container-width: 380px;
+$chart-container-width-sm: 360px;
+$rwd-max-width-base: 840px;
+$theme-square-length: calc(max(84px, 6vw));
+
+// app
+$app-side-container-width: max(331px, 23vw);
+$app-side-container-padding-bottom: max(50px, 3.5vw);
+$app-side-top-decor-line-height: max(85px, 6vw);
+$app-side-title-height: max(144px, 10vw);
+$app-right-container-margin-left: calc(#{$app-side-container-width} + 60px);
+$app-side-container-width-sm: 90px;
+$decor-line-width: 1px;
+$adjusted-screen-width: calc(1440px * (1440 / 1080)); // == 1920
+$base-top: 215;
+$title-adjusted-top: calc($adjusted-screen-width * $base-top / 1440); // 284px
+$decor-base-top: 332;
+$decor-adjusted-top: calc($adjusted-screen-width * $decor-base-top / 1440); // 442px
+$adjust-ratio: calc(1920/1440);
+$version-font-size: max(100px, calc(100px * $adjust-ratio));
+$fix-width-container-padding-x: max(40px, 2.8vw);
+
+// header 
+$header-root-padding-x: max(40px, 2.8vw);
+$header-height: min(165px, max(116px, 8vw));
+$header-height: 130px;
+$header-nav-icon-container-size: 42px;
+$header-nav-icon-size: 24px;
+$header-nav-icon-margin: 48px;
+
+// underline animation
+$underline-anim-height: 2px;
+$underline-anim-bottom: -5px;
+
+// depre
+$left-container-w-blank: $theme-square-length;
+$side-gradient-container-min-height: 280px;
+$side-gradient-container-height: 20vw;
+$left-main-container-width: 10vw;
+$left-middle-container-height: 140px;
+$brand-icon-font-size: 20px;
+$left-container-padding: 25px;
+$rwd-break-point: 1280px;
+
+
+@if ($useNavbarAnim ==true) {
+  $top-bar-height: 60px;
+}
+
+@else {
+  $top-bar-height: 45px;
+}
+
+$banner-card-width-base: 840px;
+$banner-card-height-base: 374px;
+
+@media (max-width: 500px) {
+  :root {
+    --rwd-max-width: 80vw;
+  }
+
+}
+
+// iPad mini
+@media (min-width: 768px) {
+  :root {
+    --rwd-max-width: calc(0.7 * #{$rwd-max-width-base});
+    --banner-card-height: calc(0.7 * 0.43 * #{$rwd-max-width-base});
+  }
+
+}
+
+// iPad Air
+@media (min-width: 820px) {
+  :root {
+    --rwd-max-width: calc(0.75 * #{$rwd-max-width-base});
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --rwd-max-width: calc(0.8* #{$rwd-max-width-base});
+  }
+}
+
+@media (min-width: 1100px) {
+  :root {
+    --rwd-max-width: calc(0.7 * #{$rwd-max-width-base});
+  }
+}
+
+
+
+@media (min-width: 1100px) {
+  :root {
+    --rwd-max-width: calc(0.8 * #{$rwd-max-width-base});
+  }
+}
+
+@media (min-width: 1300px) {
+  :root {
+    --rwd-max-width: calc(1.1 * #{$rwd-max-width-base});
+  }
+}
+
+@media (min-width: 1500px) {
+  :root {
+    --rwd-max-width: 66vw;
+  }
+}
+
+.content-fixed-width-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-right: $fix-width-container-padding-x;
+  padding-left: $fix-width-container-padding-x;
+}

@@ -1,0 +1,21 @@
+
+:root {
+    --br: 16;
+    --x: 0;
+    --y: 4;
+    --blur: 1;
+    --spread: 0;
+    --shadow1: #eee;
+    --shadow2: #4444440d;
+    --shadow3: #42474c59;
+    --size: 20rem;
+}
+
+.card {
+    /* box-shadow: calc(var(--x) * 1px) calc(var(--y) * 2px) calc(var(--blur) * 48px) calc(var(--spread) * 1px) var(--shadow1),
+        calc(var(--x) * 1px) calc(var(--y) * 1px) calc(var(--blur) * 8px) calc(var(--spread) * 1px) var(--shadow2),
+        calc(var(--x) * 1px) calc(var(--y) * 0px) calc(var(--blur) * 1px) calc(var(--spread) * 1px) var(--shadow3); */
+    display: table;
+    padding: 40px;
+    border-radius: 20px;
+}
