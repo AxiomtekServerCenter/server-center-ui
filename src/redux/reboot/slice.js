@@ -20,6 +20,80 @@ const initialState = {
   isUsePushEvent: true,
 };
 
+export const login = createAsyncThunk(
+  "reboot/login",
+  async (
+    { username, password, ip },
+    { dispatch, getState, rejectWithValue }
+  ) => {
+    const api = `login`;
+    return axios
+      .create({
+        baseURL: "https://" + getState().reboot.backendIp,
+        timeout: axiosTimeout,
+      })
+      .post(api, {
+        username: username,
+        password: password,
+        ip: ip,
+      })
+      .then((response) => {
+        return { ip: ip, response: response };
+      })
+      .catch((err) => {
+        return rejectWithValue({
+          ip: ip,
+          response: err.response ? err.response : err.code,
+        });
+      });
+  }
+);
+
+export const loginAllServers = createAsyncThunk(
+  "reboot/loginAllServers",
+  async (_, { dispatch, getState }) => {
+    dispatch(setStatusApiMode(true));
+    dispatch(setIsLoginAllMode(true));
+
+    let promises = [];
+
+    getState().reboot.serverList.forEach((server) => {
+      promises.push(
+        dispatch(login(server))
+          .then(async (res) => {
+            if (res.payload.response.status === 200) {
+
+              // todo: getServerStatus
+              // todo: getServerInfo
+              // todo: subscribePushEvent
+              // todo: subscribeSse
+              const index = getState().reboot.serverList.findIndex(
+                (s) => s.ip === server.ip
+              );
+              
+            }
+          })
+          .catch(() => {
+            dispatch(
+              setServerStatus({
+                ip: server.ip,
+                status: "error",
+                errorMsg: "Failed to login",
+              })
+            );
+          })
+      );
+    });
+
+    await Promise.allSettled(promises).then(function (results) {
+      dispatch(setIsLoginAllMode(false));
+      dispatch(setStatusApiMode(false));
+      results.forEach(function (res) {});
+    });
+  }
+);
+
+
 export const getServerList = createAsyncThunk(
   "reboot/getServerList",
   async (_, { getState }) => {
@@ -96,7 +170,28 @@ export const rebootSlice = createSlice({
     },
   },
   extraReducers: {
-    // getServerListupdateServer reducer
+    // login reducer --------------------------------
+    [login.pending.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.meta.arg.ip
+      );
+
+      if (index < 0) return;
+
+      state.serverList[index].isLoadingLogin = true;
+    },
+    [login.fulfilled.type]: (state, action) => {
+      let index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+
+      if (index < 0) return;
+
+      state.serverList[index].isLoadingLogin = false;
+      state.serverList[index].token = action.payload.response.data.token;
+    },
+    [login.rejected.type]: (state, action) => {},
+    // getServerList reducer --------------------------------
     [getServerList.pending.type]: (state) => {},
     [getServerList.fulfilled.type]: (state, action) => {
       state.serverList = action.payload.data;
@@ -106,6 +201,13 @@ export const rebootSlice = createSlice({
 });
 
 export const rebootMiddleware = createListenerMiddleware();
+
+rebootMiddleware.startListening({
+  actionCreator: getServerList.fulfilled,
+  effect: (_, { dispatch, getState }) => {
+    dispatch(loginAllServers());
+  },
+});
 
 export const {
   setIsLoginAllMode,

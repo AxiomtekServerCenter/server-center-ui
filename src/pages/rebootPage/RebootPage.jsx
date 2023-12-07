@@ -15,6 +15,8 @@ export const RebootPage = () => {
 
   // Redux store
   const serverList = useSelector((s) => s.reboot.serverList);
+  const statusApiMode = useSelector((s) => s.reboot.statusApiMode);
+  const isLoginAllMode = useSelector((s) => s.reboot.isLoginAllMode);
 
   // input values
   const [editUsername, setEditUsername] = useState("");
@@ -142,9 +144,9 @@ export const RebootPage = () => {
     // todo:
   };
 
-  // TODO: isDisableButton
+  // TODO: powerApiMode
   const isDisableButton = () => {
-    // todo:
+    return statusApiMode || isLoginAllMode;
   };
 
   const warningMsg =
