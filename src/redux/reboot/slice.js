@@ -5,6 +5,8 @@ import {
 } from "@reduxjs/toolkit";
 
 import axios from "axios";
+import { retryApi } from "../helper/reduxHelper";
+
 const axiosTimeout = 15000;
 
 const initialState = {
@@ -58,31 +60,20 @@ export const loginAllServers = createAsyncThunk(
     let promises = [];
 
     getState().reboot.serverList.forEach((server) => {
-      promises.push(
-        dispatch(login(server))
-          .then(async (res) => {
-            if (res.payload.response.status === 200) {
+      const promiseObj = dispatch(login(server))
+        .then(async (res) => {
+          onLoginDone({ res, server, dispatch, getState });
+        })
+        .catch(() => {
+          const statusErrData = {
+            ip: server.ip,
+            status: "error",
+            errorMsg: "Failed to login",
+          };
+          dispatch(setServerStatus(statusErrData));
+        });
 
-              // todo: getServerStatus
-              // todo: getServerInfo
-              // todo: subscribePushEvent
-              // todo: subscribeSse
-              const index = getState().reboot.serverList.findIndex(
-                (s) => s.ip === server.ip
-              );
-              
-            }
-          })
-          .catch(() => {
-            dispatch(
-              setServerStatus({
-                ip: server.ip,
-                status: "error",
-                errorMsg: "Failed to login",
-              })
-            );
-          })
-      );
+      promises.push(promiseObj);
     });
 
     await Promise.allSettled(promises).then(function (results) {
@@ -93,6 +84,92 @@ export const loginAllServers = createAsyncThunk(
   }
 );
 
+const onLoginDone = async ({ res, server, dispatch, getState }) => {
+  if (res.payload.response.status !== 200) {
+    const statusErrData = {
+      ip: server.ip,
+      status: "error",
+      errorMsg: "Failed to login.",
+    };
+    dispatch(setServerStatus(statusErrData));
+
+    return;
+  }
+
+  const index = getState().reboot.serverList.findIndex(
+    (s) => s.ip === server.ip
+  );
+
+  if (index >= 0) {
+    await dispatch(getServerStatus(getState().reboot.serverList[index]));
+
+    // todo: getServerInfo
+    // todo: subscribePushEvent
+    // todo: subscribeSse
+  }
+};
+
+export const getServerStatus = createAsyncThunk(
+  "reboot/getServerStatus",
+  async (server, { getState, rejectWithValue, dispatch }) => {
+    const api = `getserverstatus`;
+
+    let result;
+    let retry = false;
+
+    await axios
+      .create({
+        baseURL: "https://" + getState().reboot.backendIp,
+        timeout: 8000,
+      })
+      .post(api, {
+        username: server.username,
+        password: server.password,
+        ip: server.ip,
+        token: server.token,
+      })
+      .then((response) => {
+        result = { ip: server.ip, response: response };
+      })
+      .catch((err) => {
+        retry = true;
+        console.error(err);
+      });
+
+    if (!retry) {
+      return result;
+    }
+
+    const { retrySuccess, retryResult } = await retryApi({
+      dispatch: dispatch,
+      getState: getState,
+      server: server,
+      api: api,
+      method: "POST",
+    });
+
+    if (retrySuccess) {
+      return retryResult;
+    } else {
+      return rejectWithValue(retryResult);
+    }
+
+  }
+);
+
+export const getAllServerStatus = createAsyncThunk(
+  "reboot/getAllServerStatus",
+  async (_, { dispatch, getState }) => {
+    dispatch(setStatusApiMode(true));
+    let promises = [];
+    getState().reboot.serverList.forEach((server) => {
+      promises.push(dispatch(getServerStatus(server)));
+    });
+    Promise.allSettled(promises).then(function (results) {
+      dispatch(setStatusApiMode(false));
+    });
+  }
+);
 
 export const getServerList = createAsyncThunk(
   "reboot/getServerList",
@@ -148,29 +225,15 @@ export const rebootSlice = createSlice({
         state.serverList[index].errorMsg = action.payload.errorMsg;
       }
     },
-    refreshChartData: (state, action) => {
-      const powerOnCount = state.serverList.filter(
-        (server) => server.status && server.status.toLowerCase() === "on"
-      ).length;
-      const powerOffCount = state.serverList.filter(
-        (server) => server.status && server.status.toLowerCase() === "off"
-      ).length;
-      const noDataCount = state.serverList.filter(
-        (server) =>
-          server.status &&
-          server.status.toLowerCase() !== "on" &&
-          server.status.toLowerCase() !== "off"
-      ).length;
-
-      state.serverList.forEach((server) => {});
-      state.chartData = [powerOnCount, powerOffCount, noDataCount];
-    },
     getReduxServerList: (state, action) => {
       return state.serverList;
     },
   },
+
   extraReducers: {
-    // login reducer --------------------------------
+
+    // ----------------- login reducer -----------------
+
     [login.pending.type]: (state, action) => {
       const index = state.serverList.findIndex(
         (server) => server.ip === action.meta.arg.ip
@@ -191,12 +254,46 @@ export const rebootSlice = createSlice({
       state.serverList[index].token = action.payload.response.data.token;
     },
     [login.rejected.type]: (state, action) => {},
-    // getServerList reducer --------------------------------
+
+    // ----------------- getServerList reducer -----------------
+
     [getServerList.pending.type]: (state) => {},
     [getServerList.fulfilled.type]: (state, action) => {
       state.serverList = action.payload.data;
     },
     [getServerList.rejected.type]: (state, action) => {},
+
+    // ----------------- getServerStatus reducer -----------------
+
+    [getServerStatus.pending.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.meta.arg.ip
+      );
+      if (index < 0) return;
+
+      state.serverList[index].isLoadingPowerStatus = true;
+    },
+    [getServerStatus.fulfilled.type]: (state, action) => {
+      let index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+      if (!state.serverList[index]) return;
+
+      state.serverList[index].isLoadingPowerStatus = false;
+      state.serverList[index].status = action.payload.response.data;
+      state.serverList[index].errorMsg = "";
+    },
+    [getServerStatus.rejected.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+      if (!state.serverList[index]) return;
+
+      state.serverList[index].isLoadingPowerStatus = false;
+      state.serverList[index].status = "error";
+      state.serverList[index].errorMsg = "Can't get power status";
+    },
+
   },
 });
 

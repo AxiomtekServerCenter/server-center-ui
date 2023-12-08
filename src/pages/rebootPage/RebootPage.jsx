@@ -7,7 +7,10 @@ import { EditModal } from "../../component/EditModal";
 import { Banner } from "../../component/Banner/Banner";
 import { Modal } from "bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getServerList } from "../../redux/reboot/slice";
+import {
+  getServerList,
+  getAllServerStatus
+} from "../../redux/reboot/slice";
 
 export const RebootPage = () => {
   // React hooks
@@ -36,7 +39,6 @@ export const RebootPage = () => {
   const [deleteModal, setDeleteModal] = useState(null);
 
   // settings
-  const showTag = true;
   let [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
@@ -46,9 +48,12 @@ export const RebootPage = () => {
     setDeleteModal(new Modal(document.getElementById("deleteModal"), {}));
   }, []);
 
-  // TODO: onClickGetStatus
-  const onClickGetStatus = () => {
-    // TODO:
+  const onClickGetStatus = (ip) => {
+    dispatch(
+      getAllServerStatus({
+        serverList: serverList,
+      })
+    );
   };
 
   // TODO: onClickMultiPowerOn
@@ -134,9 +139,20 @@ export const RebootPage = () => {
     setNewServerName(name);
   };
 
-  // TODO: getItemStatusStyle
-  const getItemStatusStyle = () => {
-    // todo:
+  const getItemStatusStyle = (item) => {
+    if (item.status) {
+      if (item.status === "on" || item.status === "On") {
+        return "status-tag-on";
+      }
+      if (item.status === "off" || item.status === "Off") {
+        return "status-tag-off";
+      }
+      if (item.status.toLowerCase().includes("error")) {
+        return "status-tag-error";
+      }
+    }
+
+    return "server-card-secondary-text";
   };
 
   // TODO: getApiResultStyle
@@ -347,6 +363,33 @@ export const RebootPage = () => {
                 {/* --------- server card right box ---------- */}
 
                 <div className="server-card-right-box">
+                  <div className="server-card-status-section server-card-column">
+                    <div className="server-card-status">
+                      {(item.isLoadingPowerStatus || (isLoginAllMode && item.isLoadingLogin)) && (
+                        <div className="spinner-border text-info" role="status">
+                          <span className="sr-only"></span>
+                        </div>
+                      )}
+
+                      {!(item.isLoadingPowerStatus || (isLoginAllMode && item.isLoadingLogin)) && (
+
+                        <div>
+                          <span className={getItemStatusStyle(item)}>
+                            {item.status}
+                          </span>
+
+                          {item.status && item.status.toLowerCase().includes("error") &&
+                            <span className="server-card-secondary-text">
+                              {item.errorMsg}
+                            </span>
+                          }
+                        </div>
+                      )}
+
+
+                    </div>
+                  </div>
+
                   {/* edit and delete buttons */}
                   <div className="server-card-buttons-column">
                     <div className="server-card-buttons-row">
