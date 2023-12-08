@@ -1,5 +1,6 @@
 import { login } from "../reboot/slice";
 import axios from "axios";
+const apiTimeout = 8000;
 
 const retryApi = async ({
   dispatch,
@@ -44,7 +45,6 @@ const retryApi = async ({
         retryResult = { ...retryResult, ...params };
       })
       .catch((err) => {
-
         console.error(err);
         retrySuccess = false;
         retryResult = {
@@ -54,8 +54,54 @@ const retryApi = async ({
       });
   });
 
-
   return { retrySuccess: retrySuccess, retryResult: retryResult };
 };
 
-export { retryApi };
+const runApi = async ({
+  api,
+  postData,
+  server,
+  getState,
+  dispatch,
+  rejectWithValue,
+  params,
+}) => {
+  let result;
+  let shouldRetry = false;
+
+  await axios
+    .create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: apiTimeout,
+    })
+    .post(api, postData)
+    .then((response) => {
+      result = { ip: server.ip, response: response };
+      result = { ...result, ...params };
+    })
+    .catch((err) => {
+      shouldRetry = true;
+      console.error(err);
+    });
+
+  if (!shouldRetry) {
+    return result;
+  }
+
+  const { retrySuccess, retryResult } = await retryApi({
+    dispatch: dispatch,
+    getState: getState,
+    server: server,
+    api: api,
+    method: "POST",
+    params: params,
+  });
+
+  if (retrySuccess) {
+    return retryResult;
+  } else {
+    return rejectWithValue(retryResult);
+  }
+};
+
+export { retryApi, runApi };

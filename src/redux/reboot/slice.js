@@ -5,9 +5,10 @@ import {
 } from "@reduxjs/toolkit";
 
 import axios from "axios";
-import { retryApi } from "../helper/reduxHelper";
+import { retryApi, runApi } from "../helper/reduxHelper";
 
 const axiosTimeout = 15000;
+const apiTimeout = 8000;
 
 const initialState = {
   debugMode: true,
@@ -102,7 +103,6 @@ const onLoginDone = async ({ res, server, dispatch, getState }) => {
 
   if (index >= 0) {
     await dispatch(getServerStatus(getState().reboot.serverList[index]));
-
     await dispatch(getServerInfo(getState().reboot.serverList[index]));
     // todo: subscribePushEvent
     // todo: subscribeSse
@@ -113,41 +113,16 @@ export const getServerInfo = createAsyncThunk(
   "reboot/getServerInfo",
   async (server, { dispatch, getState, rejectWithValue }) => {
     const api = `getoverview`;
+    const postData = { ip: server.ip, token: server.token };
 
-    let result;
-    let retry = false;
-
-    await axios
-      .create({
-        baseURL: "https://" + getState().reboot.backendIp,
-        timeout: 8000,
-      })
-      .post(api, { ip: server.ip, token: server.token })
-      .then((response) => {
-        result = { ip: server.ip, response: response };
-      })
-      .catch((err) => {
-        retry = true;
-        console.error(err);
-      });
-
-    if (!retry) {
-      return result;
-    }
-
-    const { retrySuccess, retryResult } = await retryApi({
-      dispatch: dispatch,
-      getState: getState,
-      server: server,
-      api: api,
-      method: "POST",
+    return await runApi({
+      api,
+      postData,
+      server,
+      getState,
+      dispatch,
+      rejectWithValue,
     });
-
-    if (retrySuccess) {
-      return retryResult;
-    } else {
-      return rejectWithValue(retryResult);
-    }
   }
 );
 
@@ -155,46 +130,21 @@ export const getServerStatus = createAsyncThunk(
   "reboot/getServerStatus",
   async (server, { getState, rejectWithValue, dispatch }) => {
     const api = `getserverstatus`;
+    const postData = {
+      username: server.username,
+      password: server.password,
+      ip: server.ip,
+      token: server.token,
+    };
 
-    let result;
-    let retry = false;
-
-    await axios
-      .create({
-        baseURL: "https://" + getState().reboot.backendIp,
-        timeout: 8000,
-      })
-      .post(api, {
-        username: server.username,
-        password: server.password,
-        ip: server.ip,
-        token: server.token,
-      })
-      .then((response) => {
-        result = { ip: server.ip, response: response };
-      })
-      .catch((err) => {
-        retry = true;
-        console.error(err);
-      });
-
-    if (!retry) {
-      return result;
-    }
-
-    const { retrySuccess, retryResult } = await retryApi({
-      dispatch: dispatch,
-      getState: getState,
-      server: server,
-      api: api,
-      method: "POST",
+    return await runApi({
+      api,
+      postData,
+      server,
+      getState,
+      dispatch,
+      rejectWithValue,
     });
-
-    if (retrySuccess) {
-      return retryResult;
-    } else {
-      return rejectWithValue(retryResult);
-    }
   }
 );
 
@@ -219,7 +169,7 @@ export const getServerList = createAsyncThunk(
     const api = `getservers`;
     const axiosInstance = axios.create({
       baseURL: "https://" + backendIp,
-      timeout: 8000,
+      timeout: apiTimeout,
     });
     const response = await axiosInstance.get(api);
 
