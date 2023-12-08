@@ -103,11 +103,53 @@ const onLoginDone = async ({ res, server, dispatch, getState }) => {
   if (index >= 0) {
     await dispatch(getServerStatus(getState().reboot.serverList[index]));
 
-    // todo: getServerInfo
+    await dispatch(getServerInfo(getState().reboot.serverList[index]));
     // todo: subscribePushEvent
     // todo: subscribeSse
   }
 };
+
+export const getServerInfo = createAsyncThunk(
+  "reboot/getServerInfo",
+  async (server, { dispatch, getState, rejectWithValue }) => {
+    const api = `getoverview`;
+
+    let result;
+    let retry = false;
+
+    await axios
+      .create({
+        baseURL: "https://" + getState().reboot.backendIp,
+        timeout: 8000,
+      })
+      .post(api, { ip: server.ip, token: server.token })
+      .then((response) => {
+        result = { ip: server.ip, response: response };
+      })
+      .catch((err) => {
+        retry = true;
+        console.error(err);
+      });
+
+    if (!retry) {
+      return result;
+    }
+
+    const { retrySuccess, retryResult } = await retryApi({
+      dispatch: dispatch,
+      getState: getState,
+      server: server,
+      api: api,
+      method: "POST",
+    });
+
+    if (retrySuccess) {
+      return retryResult;
+    } else {
+      return rejectWithValue(retryResult);
+    }
+  }
+);
 
 export const getServerStatus = createAsyncThunk(
   "reboot/getServerStatus",
@@ -153,7 +195,6 @@ export const getServerStatus = createAsyncThunk(
     } else {
       return rejectWithValue(retryResult);
     }
-
   }
 );
 
@@ -231,7 +272,6 @@ export const rebootSlice = createSlice({
   },
 
   extraReducers: {
-
     // ----------------- login reducer -----------------
 
     [login.pending.type]: (state, action) => {
@@ -294,6 +334,19 @@ export const rebootSlice = createSlice({
       state.serverList[index].errorMsg = "Can't get power status";
     },
 
+    // ----------------- getServerInfo reducer -----------------
+
+    [getServerInfo.pending.type]: (state) => {},
+    [getServerInfo.fulfilled.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+
+      if (index < 0) return;
+
+      state.serverList[index].overview = action.payload.response.data;
+    },
+    [getServerInfo.rejected.type]: (state, action) => {},
   },
 });
 

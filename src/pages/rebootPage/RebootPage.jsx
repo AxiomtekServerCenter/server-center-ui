@@ -356,8 +356,44 @@ export const RebootPage = () => {
                     >
                       {item.ip}
                     </a>
-                    {/* </div> */}
                   </div>
+
+                  {/* overview section*/}
+                  <div className="server-card-overview-column server-card-column">
+                    {item.overview &&
+                      item.overview.SystemInfo &&
+                      item.overview.SystemInfo.model && (
+                        <div className="server-card-primary-text server-card-model">
+                          {item.overview.SystemInfo.model}
+                        </div>
+                      )}
+                    {item.overview &&
+                      item.overview.SystemInfo &&
+                      !item.overview.SystemInfo.model && (
+                        <div className="server-card-primary-text server-card-model">- - - - -</div>
+                      )}
+                    {(!item.overview || !item.overview.SystemInfo) && (
+                      <div className="server-card-primary-text server-card-model">- - - - -</div>
+                    )}
+
+                    {item.overview &&
+                      item.overview.SystemInfo &&
+                      item.overview.SystemInfo.serialNumber && (
+                        <div className="server-card-secondary-text server-card-serial-number">
+                          {item.overview.SystemInfo.serialNumber}
+                        </div>
+                      )}
+                    {item.overview &&
+                      item.overview.SystemInfo &&
+                      !item.overview.SystemInfo.serialNumber && (
+                        <div className="server-card-secondary-text server-card-serial-number">- - - - -</div>
+                      )}
+                    {(!item.overview || !item.overview.SystemInfo) && (
+                      <div className="server-card-secondary-text server-card-serial-number">- - - - -</div>
+                    )}
+                  </div>
+                  {/* end of overview section*/}
+
                 </div>
 
                 {/* --------- server card right box ---------- */}
