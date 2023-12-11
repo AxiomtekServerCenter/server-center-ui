@@ -5,6 +5,7 @@ import {
 } from "@reduxjs/toolkit";
 
 import axios from "axios";
+import { subscribeSse } from "../sse/slice";
 import { retryApi, runApi } from "../helper/reduxHelper";
 
 const axiosTimeout = 15000;
@@ -19,8 +20,8 @@ const initialState = {
   apiMode: false,
   statusApiMode: false,
   chartData: [],
-  useSSEevent: false,
-  isUsePushEvent: true,
+  useSSEevent: true,
+  isUsePushEvent: false,
 };
 
 export const login = createAsyncThunk(
@@ -104,8 +105,10 @@ const onLoginDone = async ({ res, server, dispatch, getState }) => {
   if (index >= 0) {
     await dispatch(getServerStatus(getState().reboot.serverList[index]));
     await dispatch(getServerInfo(getState().reboot.serverList[index]));
+    if (getState().reboot.useSSEevent) {
+      dispatch(subscribeSse(getState().reboot.serverList[index]));
+    }
     // todo: subscribePushEvent
-    // todo: subscribeSse
   }
 };
 

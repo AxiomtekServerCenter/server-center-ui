@@ -1,16 +1,20 @@
-import React  from "react";
-import {
-  HashRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import React, { useRef } from "react";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { RebootPage } from "./pages";
 import { Header } from "./component/Header/Header";
 import { SocialLink } from "./component/SocialLink/SocialLink";
 import { GuidePage } from "./pages/guide";
+import { useSSE } from "./helpers/EventService/useSSE";
+import { ToastStack } from "./ToastStack/ToastStack";
 import "./App.scss";
 import "./helpers/fontawesome";
+
 function App() {
+  const toastStackRef = useRef();
+
+  useSSE();
+
+  // TODO: Line Notify: useLineNotifyWebSocket({ ws });
 
   return (
     <div>
@@ -18,7 +22,7 @@ function App() {
         <div className="app-fluid-container">
           <Header />
           {/* toast stack */}
-          
+          <ToastStack ref={toastStackRef} id="toast-stack" />
 
           {/* left side */}
           <div className="app-side-container">
