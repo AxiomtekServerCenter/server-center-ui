@@ -12,6 +12,13 @@ import {
   getAllServerStatus,
   powerControlAll,
   setApiMode,
+  getServerStatus,
+  getServerInfo,
+  addServer,
+  updateServer,
+  deleteServer,
+  onCreateNewServer,
+  setServerChecked,
 } from "../../redux/reboot/slice";
 
 export const RebootPage = () => {
@@ -19,6 +26,7 @@ export const RebootPage = () => {
   const dispatch = useAppDispatch();
 
   // Redux store
+  const debugMode = useSelector((s) => s.reboot.debugMode);
   const serverList = useSelector((s) => s.reboot.serverList);
   const apiMode = useSelector((s) => s.reboot.apiMode);
   const statusApiMode = useSelector((s) => s.reboot.statusApiMode);
@@ -91,9 +99,54 @@ export const RebootPage = () => {
     editModal.show();
   };
 
-  // TODO: onClickSaveEdit
   const onClickSaveEdit = () => {
-    // TODO:
+    if (!editServerName || !editUsername || !editPassword) {
+      setErrorMsg("Please fill in the required fields.");
+
+      return;
+    }
+    const index = serverList.findIndex((server) => server.ip === editIp);
+    if (index < 0) return;
+
+    const currServer = serverList[index];
+
+    dispatch(
+      updateServer({
+        ip: editIp,
+        serverName: editServerName,
+        username: editUsername,
+        password: editPassword,
+        checked: editChecked,
+      })
+    ).then(() => {
+      dispatch(
+        getServerStatus({
+          ip: editIp,
+          serverName: editServerName,
+          username: editUsername,
+          password: editPassword,
+          checked: editChecked,
+          token: currServer.token,
+        })
+      );
+      dispatch(
+        getServerInfo({
+          ip: editIp,
+          serverName: editServerName,
+          username: editUsername,
+          password: editPassword,
+          checked: editChecked,
+          token: currServer.token,
+        })
+      );
+    });
+
+    editModal.hide();
+    setErrorMsg("");
+    setEditServerName("");
+    setEditUsername("");
+    setEditPassword("");
+    setEditChecked(false);
   };
 
   const onClickAddServer = () => {
@@ -105,29 +158,98 @@ export const RebootPage = () => {
     deleteModal.show();
   };
 
-  // TODO: onClickConfirmDelete
-  const onClickConfirmDelete = () => {
-    // TODO:
+  const onClickConfirmDelete = (ip) => {
+    dispatch(deleteServer({ ip: deleteIp }));
+    setDeleteIp("");
+    deleteModal.hide();
   };
 
-  // TODO: onClickCancelDelete
   const onClickCancelDelete = () => {
-    // TODO:
+    setDeleteIp("");
+    deleteModal.hide();
   };
 
-  // TODO: onClickSaveNewServer
   const onClickSaveNewServer = () => {
-    // TODO:
+    const index = serverList.findIndex((server) => server.ip === newIp);
+    if (index !== -1) {
+      setErrorMsg("IP " + newIp + " already exists!");
+
+      return;
+    }
+
+    if (!newIp || !newUsername || !newPassword || !newServerName) {
+      setErrorMsg("Please fill in the required fields.");
+
+      return;
+    }
+
+    if (debugMode && newUsername === "aa" && newPassword === "aa") {
+      const debugNewUserName = "";
+      const debugNewPassword = "";
+
+      dispatch(
+        addServer({
+          ip: newIp,
+          serverName: newServerName,
+          username: debugNewUserName,
+          password: debugNewPassword,
+        })
+      ).then(() => {
+        dispatch(
+          onCreateNewServer({
+            ip: newIp,
+            username: debugNewUserName,
+            password: debugNewPassword,
+          })
+        );
+      });
+    } else {
+      dispatch(
+        addServer({
+          ip: newIp,
+          serverName: newServerName,
+          username: newUsername,
+          password: newPassword,
+        })
+      ).then(() => {
+        dispatch(
+          onCreateNewServer({
+            ip: newIp,
+            username: newUsername,
+            password: newPassword,
+          })
+        );
+      });
+    }
+    addServerModal.hide();
+    setErrorMsg("");
+    setNewIp("");
+    setNewUsername("");
+    setNewPassword("");
+    setNewServerName("");
   };
 
-  // TODO: handleCheckChange
-  const handleCheckChange = () => {
-    // TODO
+  const handleCheckChange = ({ target: { itemIp, itemChecked } }, item) => {
+    dispatch(setServerChecked({ ip: itemIp, checked: itemChecked }));
+    dispatch(
+      updateServer({
+        ip: itemIp,
+        serverName: item.serverName,
+        username: item.username,
+        password: item.password,
+        checked: itemChecked,
+      })
+    );
   };
-  // TODO: onChangeNewIp
 
   const onChangeNewIp = (ip) => {
-    /// TODO:
+    setNewIp(ip);
+    const index = serverList.findIndex((server) => server.ip === newIp);
+    if (index !== -1) {
+      setErrorMsg("IP " + newIp + " already exists!");
+    } else {
+      setErrorMsg("");
+    }
   };
 
   const onChangeEditUsername = (name) => {

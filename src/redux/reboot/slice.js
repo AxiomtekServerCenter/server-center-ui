@@ -217,6 +217,104 @@ export const powerControlAll = createAsyncThunk(
   }
 );
 
+export const addServer = createAsyncThunk(
+  "reboot/addServer",
+  async ({ ip, serverName, username, password }, { getState }) => {
+    const api = `addserver`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: 8000,
+    });
+
+    const response = await axiosInstance.post(api, {
+      ip: ip,
+      serverName: serverName,
+      username: username,
+      password: password,
+    });
+    return {
+      response: response,
+      server: {
+        ip: ip,
+        serverName: serverName,
+        username: username,
+        password: password,
+      },
+    };
+  }
+);
+
+export const deleteServer = createAsyncThunk(
+  "reboot/deleteServer",
+  async ({ ip }, { getState, dispatch }) => {
+    const api = `deleteserver`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: 8000,
+    });
+    const response = await axiosInstance.post(api, { ip: ip });
+
+    return { response: response, server: { ip: ip } };
+  }
+);
+
+export const updateServer = createAsyncThunk(
+  "reboot/updateServer",
+  async (
+    { ip, serverName, username, password, checked },
+    { getState, dispatch }
+  ) => {
+    const api = `updateserver`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: 8000,
+    });
+    const response = await axiosInstance.post(api, {
+      ip: ip,
+      username: username,
+      serverName: serverName,
+      password: password,
+      checked: checked,
+    });
+
+    return {
+      response: response,
+      server: {
+        ip: ip,
+        serverName: serverName,
+        username: username,
+        password: password,
+        checked: checked,
+      },
+    };
+  }
+);
+
+export const onCreateNewServer = createAsyncThunk(
+  "reboot/onCreateNewServer",
+  async ({ username, password, ip }, { dispatch, getState }) => {
+    dispatch(login({ username, password, ip })).then((result) => {
+      const data = result.payload.response?.data;
+      const token = data?.token;
+      const index = getState().reboot.serverList.findIndex((s) => s.ip === ip);
+
+      if (index < 0) return;
+
+      const server = getState().reboot.serverList[index];
+      dispatch(getServerStatus(server));
+      dispatch(getServerInfo({ ip, token: token }));
+
+      if (getState().reboot.isUsePushEvent) {
+        // TODO: dispatch(subscribePushEvent({ username, password, ip, token }));
+      }
+
+      if (getState().reboot.useSSEevent) {
+        dispatch(subscribeSse(server));
+      }
+    });
+  }
+);
+
 export const rebootSlice = createSlice({
   name: "reboot",
   initialState,
@@ -376,6 +474,50 @@ export const rebootSlice = createSlice({
         }
       }
     },
+
+    // ----------------- addServer reducer -----------------
+
+    [addServer.pending.type]: (state) => {},
+    [addServer.fulfilled.type]: (state, action) => {
+      state.serverList.unshift({
+        ip: action.payload.server.ip,
+        serverName: action.payload.server.serverName,
+        username: action.payload.server.username,
+        password: action.payload.server.password,
+        checked: true,
+        status: "",
+        apiResult: "",
+      });
+    },
+    [addServer.rejected.type]: (state, action) => {},
+
+    // ----------------- updateServer reducer -----------------
+
+    [updateServer.pending.type]: (state) => {},
+    [updateServer.fulfilled.type]: (state, action) => {
+      let index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.server.ip
+      );
+
+      if (index < 0) return;
+
+      state.serverList[index].serverName = action.payload.server.serverName;
+      state.serverList[index].username = action.payload.server.username;
+      state.serverList[index].password = action.payload.server.password;
+      state.serverList[index].checked = action.payload.server.checked;
+    },
+    [updateServer.rejected.type]: (state, action) => {},
+
+    // ----------------- deleteServer reducer -----------------
+
+    [deleteServer.pending.type]: (state) => {},
+    [deleteServer.fulfilled.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.server.ip
+      );
+      state.serverList.splice(index, 1);
+    },
+    [deleteServer.rejected.type]: (state, action) => {},
   },
 });
 
@@ -405,6 +547,5 @@ export const {
   setStatusApiMode,
   setServerStatus,
   setChartData,
-  refreshChartData,
   getReduxServerList,
 } = rebootSlice.actions;
