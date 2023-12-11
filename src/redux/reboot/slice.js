@@ -177,6 +177,46 @@ export const getServerList = createAsyncThunk(
   }
 );
 
+export const powerControl = createAsyncThunk(
+  "reboot/powerControl",
+  async ({ server, resetType }, { dispatch, getState, rejectWithValue }) => {
+    const api = `powercontrol`;
+    const postData = {
+      username: server.username,
+      password: server.password,
+      ip: server.ip,
+      resetType: resetType,
+      token: server.token,
+    };
+
+    return await runApi({
+      api,
+      postData,
+      server,
+      getState,
+      dispatch,
+      rejectWithValue,
+      params: { resetType: resetType },
+    });
+  }
+);
+
+export const powerControlAll = createAsyncThunk(
+  "reboot/powerControlAll",
+  async ({ selectedServers, resetType }, { dispatch, getState }) => {
+    dispatch(setApiMode(true));
+    let promises = [];
+    selectedServers.forEach((server) => {
+      promises.push(dispatch(powerControl({ server, resetType })));
+    });
+
+    Promise.allSettled(promises).then(function (results) {
+      results.forEach(function (res) {});
+      dispatch(setApiMode(false));
+    });
+  }
+);
+
 export const rebootSlice = createSlice({
   name: "reboot",
   initialState,
@@ -297,10 +337,58 @@ export const rebootSlice = createSlice({
       state.serverList[index].overview = action.payload.response.data;
     },
     [getServerInfo.rejected.type]: (state, action) => {},
+
+    // ----------------- powerControl reducer -----------------
+    [powerControl.pending.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.meta.arg.server.ip
+      );
+      if (index < 0) return;
+
+      state.serverList[index].isLoadingPowerControlResult = true;
+    },
+    [powerControl.fulfilled.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+
+      if (index >= 0) {
+        state.serverList[index].isLoadingPowerControlResult = false;
+
+        let apiResult = action.payload.response.status;
+        if (action.payload.response.status === 200) {
+          const operation = action.payload.resetType === "On" ? "on" : "off";
+          apiResult = "Turned " + operation + ": Success";
+        }
+
+        state.serverList[index].apiResult = apiResult;
+      }
+    },
+    [powerControl.rejected.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+
+      if (index >= 0) {
+        state.serverList[index].isLoadingPowerControlResult = false;
+        if (action.payload.response) {
+          state.serverList[index].apiResult = action.payload.response.data;
+        }
+      }
+    },
   },
 });
 
 export const rebootMiddleware = createListenerMiddleware();
+
+rebootMiddleware.startListening({
+  actionCreator: powerControlAll.fulfilled,
+  effect: (_, { dispatch, unsubscribe, getState }) => {
+    setTimeout(() => {
+      dispatch(getAllServerStatus());
+    }, 3000);
+  },
+});
 
 rebootMiddleware.startListening({
   actionCreator: getServerList.fulfilled,

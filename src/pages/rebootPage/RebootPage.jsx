@@ -9,7 +9,9 @@ import { Modal } from "bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   getServerList,
-  getAllServerStatus
+  getAllServerStatus,
+  powerControlAll,
+  setApiMode,
 } from "../../redux/reboot/slice";
 
 export const RebootPage = () => {
@@ -18,6 +20,7 @@ export const RebootPage = () => {
 
   // Redux store
   const serverList = useSelector((s) => s.reboot.serverList);
+  const apiMode = useSelector((s) => s.reboot.apiMode);
   const statusApiMode = useSelector((s) => s.reboot.statusApiMode);
   const isLoginAllMode = useSelector((s) => s.reboot.isLoginAllMode);
 
@@ -56,14 +59,25 @@ export const RebootPage = () => {
     );
   };
 
-  // TODO: onClickMultiPowerOn
   const onClickMultiPowerOn = () => {
-    // TODO:
+    dispatch(setApiMode(true));
+    localStorage.setItem("api-mode", true);
+    const checkedServers = serverList.filter((server) => server.checked);
+    dispatch(
+      powerControlAll({ selectedServers: checkedServers, resetType: "On" })
+    );
   };
 
-  // TODO: onClickMultiPowerOff
   const onClickMultiPowerOff = () => {
-    // TODO:
+    dispatch(setApiMode(true));
+    localStorage.setItem("api-mode", true);
+    const checkedServers = serverList.filter((server) => server.checked);
+    dispatch(
+      powerControlAll({
+        selectedServers: checkedServers,
+        resetType: "ForceOff",
+      })
+    );
   };
 
   const onClickEdit = (item) => {
@@ -155,14 +169,21 @@ export const RebootPage = () => {
     return "server-card-secondary-text";
   };
 
-  // TODO: getApiResultStyle
-  const getApiResultStyle = () => {
-    // todo:
+  const getApiResultStyle = (item) => {
+    if (item.apiResult) {
+      if (
+        item.apiResult.toLowerCase().includes("error") ||
+        item.apiResult.toLowerCase().includes("fail") ||
+        item.apiResult.toLowerCase().includes("can't")
+      ) {
+        return "server-card-api-error";
+      }
+    }
+    return "server-card-api-success";
   };
 
-  // TODO: powerApiMode
   const isDisableButton = () => {
-    return statusApiMode || isLoginAllMode;
+    return apiMode || statusApiMode || isLoginAllMode;
   };
 
   const warningMsg =
@@ -370,10 +391,14 @@ export const RebootPage = () => {
                     {item.overview &&
                       item.overview.SystemInfo &&
                       !item.overview.SystemInfo.model && (
-                        <div className="server-card-primary-text server-card-model">- - - - -</div>
+                        <div className="server-card-primary-text server-card-model">
+                          - - - - -
+                        </div>
                       )}
                     {(!item.overview || !item.overview.SystemInfo) && (
-                      <div className="server-card-primary-text server-card-model">- - - - -</div>
+                      <div className="server-card-primary-text server-card-model">
+                        - - - - -
+                      </div>
                     )}
 
                     {item.overview &&
@@ -386,14 +411,17 @@ export const RebootPage = () => {
                     {item.overview &&
                       item.overview.SystemInfo &&
                       !item.overview.SystemInfo.serialNumber && (
-                        <div className="server-card-secondary-text server-card-serial-number">- - - - -</div>
+                        <div className="server-card-secondary-text server-card-serial-number">
+                          - - - - -
+                        </div>
                       )}
                     {(!item.overview || !item.overview.SystemInfo) && (
-                      <div className="server-card-secondary-text server-card-serial-number">- - - - -</div>
+                      <div className="server-card-secondary-text server-card-serial-number">
+                        - - - - -
+                      </div>
                     )}
                   </div>
                   {/* end of overview section*/}
-
                 </div>
 
                 {/* --------- server card right box ---------- */}
@@ -401,29 +429,62 @@ export const RebootPage = () => {
                 <div className="server-card-right-box">
                   <div className="server-card-status-section server-card-column">
                     <div className="server-card-status">
-                      {(item.isLoadingPowerStatus || (isLoginAllMode && item.isLoadingLogin)) && (
-                        <div className="spinner-border text-info" role="status">
-                          <span className="sr-only"></span>
-                        </div>
-                      )}
+                      {(item.isLoadingPowerStatus ||
+                        (isLoginAllMode && item.isLoadingLogin)) && (
+                          <div className="spinner-border text-info" role="status">
+                            <span className="sr-only"></span>
+                          </div>
+                        )}
 
-                      {!(item.isLoadingPowerStatus || (isLoginAllMode && item.isLoadingLogin)) && (
-
-                        <div>
-                          <span className={getItemStatusStyle(item)}>
-                            {item.status}
-                          </span>
-
-                          {item.status && item.status.toLowerCase().includes("error") &&
-                            <span className="server-card-secondary-text">
-                              {item.errorMsg}
+                      {!(
+                        item.isLoadingPowerStatus ||
+                        (isLoginAllMode && item.isLoadingLogin)
+                      ) && (
+                          <div>
+                            <span className={getItemStatusStyle(item)}>
+                              {item.status}
                             </span>
-                          }
+
+                            {item.status &&
+                              item.status.toLowerCase().includes("error") && (
+                                <span className="server-card-secondary-text">
+                                  {item.errorMsg}
+                                </span>
+                              )}
+                          </div>
+                        )}
+                    </div>
+                  </div>
+
+                  {/* API result */}
+                  <div className="server-card-column server-card-api-status-column">
+                    {(!item.isLoadingPowerControlResult ||
+                      (item.isLoadingPowerControlResult && !item.checked)) &&
+                      item.apiResult && (
+                        <div>
+                          <div className={getApiResultStyle(item)}>
+                            {item.apiResult}
+                          </div>
+                          {/* <div className="server-card-blank-text"> </div> */}
                         </div>
                       )}
 
+                    {(!item.isLoadingPowerControlResult ||
+                      (item.isLoadingPowerControlResult && !item.checked)) &&
+                      !item.apiResult && (
+                        <div>
+                          <div className="server-card-api-no-data">
+                            - - - - -
+                          </div>
+                          {/* <div className="server-card-blank-text"> </div> */}
+                        </div>
+                      )}
 
-                    </div>
+                    {item.checked && item.isLoadingPowerControlResult && (
+                      <div className="spinner-border text-info" role="status">
+                        <span className="sr-only"></span>
+                      </div>
+                    )}
                   </div>
 
                   {/* edit and delete buttons */}
@@ -448,8 +509,8 @@ export const RebootPage = () => {
                       </button>
                     </div>
                   </div>
-                  {/* End of edit and delete buttons */}
 
+                  {/* End of edit and delete buttons */}
                   <div className="card-server-input-container">
                     <input
                       id={item.ip.replaceAll(".", "-") + "-checkbox"}
