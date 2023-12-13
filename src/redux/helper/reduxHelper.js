@@ -79,6 +79,10 @@ const runApi = async ({
   let result;
   let shouldRetry = false;
 
+  if (getState().reboot.debugMode) {
+    console.log("\n\n Running API: ", api, ". Post data: ", postData);
+  }
+
   await axios
     .create({
       baseURL: "https://" + getState().reboot.backendIp,

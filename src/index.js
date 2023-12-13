@@ -7,13 +7,14 @@ import { Provider } from "react-redux";
 import rootStore from "./redux/store";
 import "./Theme.scss";
 import "bootstrap";
+import { WebSocketProvider } from "./helpers/WebSocket/WebSocketContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={rootStore.store}>
-    
+    <WebSocketProvider>
       <App />
-    
+    </WebSocketProvider>
   </Provider>
 );
 

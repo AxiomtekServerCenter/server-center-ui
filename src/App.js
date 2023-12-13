@@ -5,15 +5,20 @@ import { Header } from "./component/Header/Header";
 import { SocialLink } from "./component/SocialLink/SocialLink";
 import { GuidePage } from "./pages/guide";
 import { useSSE } from "./helpers/EventService/useSSE";
+import { usePushEvent } from "./helpers/EventService/usePushEvent";
+import { usePushEventWebSocket } from "./helpers/WebSocket/usePushEventWebSocket";
+import { useWebSocket } from "./helpers/WebSocket/WebSocketContext";
 import { ToastStack } from "./ToastStack/ToastStack";
 import "./App.scss";
 import "./helpers/fontawesome";
 
 function App() {
   const toastStackRef = useRef();
+  const ws = useWebSocket();
 
   useSSE();
-
+  usePushEvent();
+  usePushEventWebSocket({ ws });
   // TODO: Line Notify: useLineNotifyWebSocket({ ws });
 
   return (

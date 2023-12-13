@@ -20,8 +20,8 @@ const initialState = {
   apiMode: false,
   statusApiMode: false,
   chartData: [],
-  useSSEevent: true,
-  isUsePushEvent: false,
+  useSSEevent: false,
+  isUsePushEvent: true,
 };
 
 export const login = createAsyncThunk(
@@ -108,7 +108,9 @@ const onLoginDone = async ({ res, server, dispatch, getState }) => {
     if (getState().reboot.useSSEevent) {
       dispatch(subscribeSse(getState().reboot.serverList[index]));
     }
-    // todo: subscribePushEvent
+    if (getState().reboot.isUsePushEvent) {
+      await dispatch(subscribePushEvent(getState().reboot.serverList[index]));
+    }
   }
 };
 
@@ -308,12 +310,58 @@ export const onCreateNewServer = createAsyncThunk(
       dispatch(getServerInfo({ ip, token: token }));
 
       if (getState().reboot.isUsePushEvent) {
-        // TODO: dispatch(subscribePushEvent({ username, password, ip, token }));
+        dispatch(subscribePushEvent(server));
       }
 
       if (getState().reboot.useSSEevent) {
         dispatch(subscribeSse(server));
       }
+    });
+  }
+);
+
+const subscribePushEvent = createAsyncThunk(
+  "reboot/subscribePushEvent",
+  async ({ ip, token }, { dispatch, getState, rejectWithValue }) => {
+    const api = `subscribepushevent`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: 8000,
+    });
+    const response = await axiosInstance.post(api, {
+      ip: ip,
+      token: token,
+    });
+    if (response.status === 200) {
+      return { ip: ip, data: response.data };
+    } else {
+      rejectWithValue({ ip: ip, error: response.error });
+    }
+  }
+);
+
+export const unsubscribeAllPushEvent = createAsyncThunk(
+  "reboot/unsubscribeAllPushEvent",
+  async (_, { dispatch, getState }) => {
+    let promises = [];
+    getState().reboot.serverList.forEach((server) => {
+      promises.push(dispatch(unsubscribePushEvent(server)));
+    });
+  }
+);
+
+export const unsubscribePushEvent = createAsyncThunk(
+  "reboot/unsubscribepushevent",
+  async ({ ip, token, subscriptionId }, { dispatch, getState }) => {
+    const api = `unsubscribepushevent`;
+    const axiosInstance = axios.create({
+      baseURL: "https://" + getState().reboot.backendIp,
+      timeout: 8000,
+    });
+    const response = await axiosInstance.post(api, {
+      ip: ip,
+      token: token,
+      subscriptionId: subscriptionId,
     });
   }
 );
@@ -521,6 +569,21 @@ export const rebootSlice = createSlice({
       state.serverList.splice(index, 1);
     },
     [deleteServer.rejected.type]: (state, action) => {},
+
+    // ----------------- subscribePushEvent reducer -----------------
+
+    [subscribePushEvent.pending.type]: (state) => {},
+    [subscribePushEvent.fulfilled.type]: (state, action) => {
+      const index = state.serverList.findIndex(
+        (server) => server.ip === action.payload.ip
+      );
+
+      if (index < 0) return;
+
+      state.serverList[index].subscriptionId =
+        action.payload.data.subscriptionId;
+    },
+    [subscribePushEvent.rejected.type]: (state, action) => {},
   },
 });
 

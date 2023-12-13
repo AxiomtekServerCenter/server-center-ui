@@ -19,6 +19,7 @@ import {
   deleteServer,
   onCreateNewServer,
   setServerChecked,
+  unsubscribeAllPushEvent,
 } from "../../redux/reboot/slice";
 
 export const RebootPage = () => {
@@ -31,6 +32,7 @@ export const RebootPage = () => {
   const apiMode = useSelector((s) => s.reboot.apiMode);
   const statusApiMode = useSelector((s) => s.reboot.statusApiMode);
   const isLoginAllMode = useSelector((s) => s.reboot.isLoginAllMode);
+  const isUsePushEvent = useSelector(s => s.reboot.isUsePushEvent);
 
   // input values
   const [editUsername, setEditUsername] = useState("");
@@ -57,7 +59,13 @@ export const RebootPage = () => {
     setEditModal(new Modal(document.getElementById("editServerModal"), {}));
     setAddServerModal(new Modal(document.getElementById("addServerModal"), {}));
     setDeleteModal(new Modal(document.getElementById("deleteModal"), {}));
-  }, []);
+
+    return () => {
+      if (isUsePushEvent) {
+        dispatch(unsubscribeAllPushEvent());
+      }
+    };
+  }, [dispatch, isUsePushEvent]);
 
   const onClickGetStatus = (ip) => {
     dispatch(
